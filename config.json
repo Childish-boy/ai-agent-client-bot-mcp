@@ -1,0 +1,19 @@
+{
+  "api_provider": "tongyi",
+  "save_directory": "./generated_images",
+  "save_format": "png",
+  
+  "tongyi": {
+    "api_key": "sk-xxx",
+    "model": "wanx-v1",
+    "endpoint": "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis"
+  },
+  
+  "default_parameters": {
+    "width": 1024,
+    "height": 1024,
+    "num_images": 1,
+    "steps": 30
+  }
+}
+

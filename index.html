@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI聊天机器人</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-user {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .message-bot {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+
+        .message-user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message-bot .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .data-table-container {
+            margin-top: 15px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-进行中 {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-待开始 {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-高 {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .priority-中 {
+            color: #2563eb;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .image-container {
+            margin-top: 15px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-container h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .generated-image {
+            width: 100%;
+            max-width: 512px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin: 10px 0;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .generated-image:hover {
+            transform: scale(1.02);
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .image-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .image-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .image-loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .weather-container {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .weather-container h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+
+        .weather-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .weather-item {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #34495e;
+        }
+
+        .weather-item strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-box {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-box:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .quick-questions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .quick-question-btn {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-question-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .info-text {
+            color: #666;
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* 滚动条样式 */
+        .messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 公司员工日程管理助手</h1>
+            <p>智能查询员工日程安排 | 支持按部门筛选 | 一键导出Excel</p>
+        </div>
+
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="message message-bot">
+                    <div class="message-content">
+                        👋 您好！我是智能AI助手，支持以下功能：<br><br>
+                        <strong>📋 日程管理功能：</strong><br>
+                        • 点击下方快捷按钮查询员工日程<br>
+                        • 或输入："查询技术部员工日程"<br>
+                        • 支持部门：技术部、市场部、人事部、财务部<br>
+                        • 查询后可下载Excel文件<br><br>
+                        <strong>🎨 AI画图功能：</strong><br>
+                        • 输入："画一只可爱的小猫"<br>
+                        • 或："生成一幅科技感的未来城市"<br>
+                        • 图片生成后可以查看和下载<br>
+                        • 支持各种风格：写实、卡通、艺术等<br><br>
+                        <strong>🌤️ 天气查询功能（MCP服务）：</strong><br>
+                        • 输入："北京天气"<br>
+                        • 或："查询上海的天气"<br>
+                        • 支持全国各大城市实时天气查询<br>
+                        • 由独立 MCP 服务提供（微服务架构）<br><br>
+                        <strong>💡 提示：</strong>画图需要30-60秒，请耐心等待
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-questions">
+                <button class="quick-question-btn" onclick="sendQuickQuestion('查询全体员工日程安排')">📋 全体员工日程</button>
+                <button class="quick-question-btn" onclick="sendQuickQuestion('查询技术部员工日程')">💻 技术部日程</button>
+                <button class="quick-question-btn" onclick="sendQuickQuestion('查询市场部员工日程')">📈 市场部日程</button>
+                <button class="quick-question-btn" onclick="sendQuickQuestion('查询人事部员工日程')">👥 人事部日程</button>
+                <button class="quick-question-btn" onclick="sendQuickQuestion('查询财务部员工日程')">💰 财务部日程</button>
+            </div>
+
+            <div class="input-container">
+                <input 
+                    type="text" 
+                    class="input-box" 
+                    id="userInput" 
+                    placeholder="输入您的问题，例如：查询技术部员工日程..."
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">发送</button>
+            </div>
+            
+            <div class="info-text">
+                💡 提示：支持查询不同部门的员工日程，查询结果可下载为Excel文件
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentScheduleData = null;
+
+        function addMessage(content, isUser = false) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'message-user' : 'message-bot'}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content;
+            
+            messageDiv.appendChild(contentDiv);
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function createDataTable(data) {
+            if (!data || !data.schedules || data.schedules.length === 0) {
+                return '<p>没有找到相关数据</p>';
+            }
+
+            currentScheduleData = data.schedules;
+
+            let html = '<div class="data-table-container">';
+            html += `<h3>📊 ${data.query_department} - 员工日程表（共 ${data.total_count} 条）</h3>`;
+            html += '<table class="data-table">';
+            html += '<thead><tr>';
+            html += '<th>部门</th><th>员工</th><th>职位</th><th>日期</th><th>任务</th><th>状态</th><th>优先级</th>';
+            html += '</tr></thead>';
+            html += '<tbody>';
+
+            data.schedules.forEach(schedule => {
+                html += '<tr>';
+                html += `<td>${schedule.department}</td>`;
+                html += `<td>${schedule.employee_name}</td>`;
+                html += `<td>${schedule.position}</td>`;
+                html += `<td>${schedule.date}</td>`;
+                html += `<td>${schedule.task}</td>`;
+                html += `<td><span class="status-badge status-${schedule.status}">${schedule.status}</span></td>`;
+                html += `<td><span class="priority-${schedule.priority}">${schedule.priority}</span></td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            html += '<button class="download-btn" onclick="downloadExcel()">📥 下载为Excel文件</button>';
+            html += '</div>';
+
+            return html;
+        }
+
+        function createImageDisplay(imageData) {
+            if (!imageData || !imageData.url) {
+                return '<p>图片数据无效</p>';
+            }
+
+            const imageUrl = `http://localhost:5000${imageData.url}`;
+            const prompt = imageData.prompt || '生成的图片';
+            
+            let html = '<div class="image-container">';
+            html += '<h3>🎨 AI生成的图片</h3>';
+            html += `<p style="color: #666; margin-bottom: 10px;">提示词: ${prompt}</p>`;
+            html += `<img src="${imageUrl}" alt="${prompt}" class="generated-image" onclick="window.open('${imageUrl}', '_blank')">`;
+            html += '<div class="image-actions">';
+            html += `<button class="image-btn" onclick="downloadImage('${imageUrl}', '${imageData.filename}')">📥 下载图片</button>`;
+            html += `<button class="image-btn" onclick="window.open('${imageUrl}', '_blank')">🔍 查看大图</button>`;
+            html += '</div>';
+            html += '</div>';
+
+            return html;
+        }
+
+        function createWeatherDisplay(weatherData) {
+            if (!weatherData || !weatherData.success) {
+                return `<p>⚠️ 天气查询失败: ${weatherData?.error || '未知错误'}</p>`;
+            }
+
+            let html = '<div class="weather-container">';
+            
+            // 实时天气
+            if (weatherData.type === 'current') {
+                html += '<h3>🌤️ 实时天气（MCP 服务）</h3>';
+                html += '<div class="weather-info">';
+                html += `<div class="weather-item"><strong>🏙️ 城市：</strong>${weatherData.city}</div>`;
+                html += `<div class="weather-item"><strong>☁️ 天气：</strong>${weatherData.weather}</div>`;
+                html += `<div class="weather-item"><strong>🌡️ 温度：</strong>${weatherData.temperature}°C</div>`;
+                html += `<div class="weather-item"><strong>💨 风向：</strong>${weatherData.winddirection}风</div>`;
+                html += `<div class="weather-item"><strong>💪 风力：</strong>${weatherData.windpower}级</div>`;
+                html += `<div class="weather-item"><strong>💧 湿度：</strong>${weatherData.humidity}%</div>`;
+                html += `<div class="weather-item"><strong>⏰ 更新时间：</strong>${weatherData.reporttime}</div>`;
+                html += '</div>';
+            }
+            // 预报天气
+            else if (weatherData.type === 'forecast' && weatherData.forecasts) {
+                html += '<h3>📅 未来天气预报（MCP 服务）</h3>';
+                html += `<p style="margin-bottom: 15px; color: #666;">📍 ${weatherData.city}</p>`;
+                
+                weatherData.forecasts.forEach((forecast, index) => {
+                    html += '<div class="weather-forecast-day" style="background: rgba(255,255,255,0.9); padding: 15px; border-radius: 10px; margin-bottom: 10px;">';
+                    html += `<h4 style="margin: 0 0 10px 0; color: #2c3e50;">${forecast.date} (${forecast.week})</h4>`;
+                    html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">';
+                    html += '<div style="background: #fff3cd; padding: 10px; border-radius: 8px;">';
+                    html += `<div style="font-weight: bold; color: #856404;">☀️ 白天</div>`;
+                    html += `<div>天气：${forecast.dayweather}</div>`;
+                    html += `<div>温度：${forecast.daytemp}°C</div>`;
+                    html += `<div>风向：${forecast.daywind}</div>`;
+                    html += '</div>';
+                    html += '<div style="background: #d1ecf1; padding: 10px; border-radius: 8px;">';
+                    html += `<div style="font-weight: bold; color: #0c5460;">🌙 夜间</div>`;
+                    html += `<div>天气：${forecast.nightweather}</div>`;
+                    html += `<div>温度：${forecast.nighttemp}°C</div>`;
+                    html += `<div>风向：${forecast.nightwind}</div>`;
+                    html += '</div>';
+                    html += '</div></div>';
+                });
+            }
+            
+            html += '<p style="margin-top: 10px; color: #666; font-size: 12px;">💡 数据由独立 MCP 天气服务提供</p>';
+            html += '</div>';
+
+            return html;
+        }
+
+        async function downloadImage(imageUrl, filename) {
+            try {
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename || 'generated-image.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                addMessage('✅ 图片已下载成功！', false);
+            } catch (error) {
+                addMessage('❌ 下载图片失败: ' + error.message, false);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // 禁用输入
+            input.disabled = true;
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loading"></span>';
+
+            // 显示用户消息
+            addMessage(message, true);
+            input.value = '';
+
+            try {
+                const response = await fetch('http://localhost:5000/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const result = await response.json();
+                
+                // 调试信息
+                console.log('📥 收到后端响应:', result);
+                console.log('图片数据:', result.image);
+
+                if (result.success) {
+                    // 显示AI回复
+                    let botMessage = result.message;
+
+                    // 如果有日程数据，显示表格
+                    if (result.data && result.data.schedules) {
+                        console.log('✅ 检测到日程数据');
+                        botMessage += '<br><br>' + createDataTable(result.data);
+                    }
+
+                    // 如果有图片数据，显示图片
+                    if (result.image) {
+                        console.log('✅ 检测到图片数据:', result.image);
+                        
+                        if (result.image.url) {
+                            botMessage += '<br><br>' + createImageDisplay(result.image);
+                        } else if (result.image.error) {
+                            botMessage += '<br><br>⚠️ 图片生成失败: ' + result.image.error;
+                        } else {
+                            botMessage += '<br><br>⚠️ 图片数据格式异常';
+                        }
+                    }
+
+                    // 如果有天气数据，显示天气
+                    if (result.weather) {
+                        console.log('✅ 检测到天气数据（MCP 服务）:', result.weather);
+                        botMessage += '<br><br>' + createWeatherDisplay(result.weather);
+                    }
+
+                    addMessage(botMessage, false);
+                } else {
+                    addMessage('抱歉，处理您的请求时出现错误：' + result.error, false);
+                }
+            } catch (error) {
+                addMessage('❌ 连接服务器失败，请确保后端服务已启动（python app.py）<br>错误信息: ' + error.message, false);
+            } finally {
+                // 恢复输入
+                input.disabled = false;
+                sendBtn.disabled = false;
+                sendBtn.textContent = '发送';
+                input.focus();
+            }
+        }
+
+        async function sendQuickQuestion(question) {
+            // 直接查询，不通过 AI
+            const departmentMap = {
+                '查询全体员工日程安排': '全体',
+                '查询技术部员工日程': '技术部',
+                '查询市场部员工日程': '市场部',
+                '查询人事部员工日程': '人事部',
+                '查询财务部员工日程': '财务部'
+            };
+            
+            const department = departmentMap[question];
+            
+            if (department) {
+                // 直接调用接口
+                await directQuery(department, question);
+            } else {
+                // 使用 AI
+                document.getElementById('userInput').value = question;
+                sendMessage();
+            }
+        }
+        
+        async function directQuery(department, userMessage) {
+            const sendBtn = document.getElementById('sendBtn');
+            
+            // 显示用户消息
+            addMessage(userMessage, true);
+            
+            // 禁用按钮
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loading"></span>';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/employee-schedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ department: department })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    let botMessage = `好的，我为您查询到了<strong>${data.query_department}</strong>的员工日程安排，共 <strong>${data.total_count}</strong> 条记录：`;
+                    botMessage += '<br><br>' + createDataTable(data);
+                    addMessage(botMessage, false);
+                } else {
+                    addMessage('抱歉，查询失败：' + (data.error || '未知错误'), false);
+                }
+            } catch (error) {
+                addMessage('❌ 连接服务器失败，请确保后端服务已启动<br>错误信息: ' + error.message, false);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '发送';
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function downloadExcel() {
+            if (!currentScheduleData) {
+                alert('没有可下载的数据');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5000/api/download-excel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ schedules: currentScheduleData })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `员工日程表_${new Date().getTime()}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+
+                    addMessage('✅ Excel文件已下载成功！', false);
+                } else {
+                    alert('下载失败，请重试');
+                }
+            } catch (error) {
+                alert('下载出错: ' + error.message);
+            }
+        }
+
+        // 页面加载完成后聚焦输入框
+        window.onload = function() {
+            document.getElementById('userInput').focus();
+        };
+    </script>
+</body>
+</html>
+
