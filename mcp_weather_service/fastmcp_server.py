@@ -4,7 +4,7 @@ from typing import Optional
 from mcp.server.fastmcp import FastMCP
 
 # 高德地图 API Key
-AMAP_API_KEY = "xxx"
+AMAP_API_KEY = "fe27756e93ee6366dbfe585d6677a411"
 
 # 创建 FastMCP 服务器实例（配置 HTTP 端口和主机）
 mcp = FastMCP(

@@ -311,7 +311,7 @@ def query_weather(city: str, forecast: bool = False, filter_indices: str = None)
 def init_llm():
     """初始化 DeepSeek 大模型"""
     api_key = os.getenv('DEEPSEEK_API_KEY')
-    
+    print(f"DEEPSEEK_API_KEY: {api_key}")
     if not api_key:
         raise ValueError("请设置 DEEPSEEK_API_KEY 环境变量")
     
