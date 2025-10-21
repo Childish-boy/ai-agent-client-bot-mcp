@@ -4,7 +4,7 @@
   "save_format": "png",
   
   "tongyi": {
-    "api_key": "sk-76577686dc8b453c857ee8b290fe9e21",
+    "api_key": "sk-xxx",
     "model": "wanx-v1",
     "endpoint": "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis"
   },
@@ -16,4 +16,5 @@
     "steps": 30
   }
 }
+
 
